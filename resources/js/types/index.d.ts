@@ -41,3 +41,18 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+export interface ProjectType {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface TaskType {
+    id: number;
+    name: string;
+    priority: number;
+    project_id: number;
+    created_at: string;
+    updated_at: string;
+}
