@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
+import axios from 'axios';
 import Task from '@/components/tasks/task';
 import { type SharedData, ProjectType, TaskType } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/react';
@@ -13,11 +14,8 @@ type TasksProps = {
 export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
     const { auth, flash } = usePage<SharedData>().props;
     console.log(`Tasks():projects:selectedProject:tasks`,projects,selectedProject,tasks);
-    // const allProject = {id:0, 'name': 'All Projects'};
-    // const allProjects = [allProject, ...projects];
-
-    console.log(`Tasks():selectedProject`,selectedProject);
-    // const projects = ['All Projects', 'Project Alpha', 'Project Beta', 'Project Gamma'];
+    const [tasksData, setTasksData] = useState(tasks);
+    const [dragDropped, setDragDropped] = useState(false);
 
     const setSelectedProject = (projectId:string) => {
         console.log(`setSelectedProject():projectId`,projectId);
@@ -25,7 +23,7 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
     }
     const handleCreate = () => {
         console.log(`handleCreate()`);
-        router.post(route('task.create'));
+        router.post(route('task.create',selectedProject.id));
     };
 
     const handleEdit = (taskToEdit: TaskType) => {
@@ -34,31 +32,73 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
         router.get(route('task.edit',taskToEdit.id));
     };
 
-      const handleDelete = (id:number) => {
-        if (window.confirm('Are you sure you want to delete this task?')) {
-            router.delete(route('task.destroy', id));
-        //   setTasks(tasks.filter(task => task.id !== id));
-        }
-      };
+    const handleDelete = (id:number) => {
+      if (window.confirm('Are you sure you want to delete this task?')) {
+          router.delete(route('task.destroy', id));
+      }
+    };
 
-    //   const filteredTasks =
-    // selectedProject === 'All Projects'
-    //   ? tasks
-    //   : tasks.filter(task => task.project === selectedProject);
+    const moveTask = (from:number, to:number) => {
+      console.log(`moveTask():from ${from} to ${to}`);
+      const updatedTasksData = [...tasksData];
+      const [movedTask] = updatedTasksData.splice(from, 1);
+      updatedTasksData.splice(to, 0, movedTask);
 
+      // change the tasks' priorities on the client side first
+      updatedTasksData.forEach((obj, i) => {
+        obj.priority = i + 1;
+      });
+
+      console.log(`moveTask():updatedTasks`,updatedTasksData);
+      setTasksData(updatedTasksData);
+      setDragDropped(true);
+    };
+
+    //reload the home page as failed to sync priority changes
+    const reloadAfterSyncFailure = (error = null) => {
+      if (error) console.log(error);
+      alert(`Oops! something went wrong, could not save the changes.`);
+      router.get(route('home'));
+    }
+
+    useEffect(() => {
+      setTasksData(tasks);
+    }, [tasks]);
+
+    // if task order changed via drag and drop sync the changed priorities in the backend
+    useEffect(() => {
+      if (dragDropped) {
+        axios.post('/priority', tasksData.map((el) => el.id).join())
+        .then(function (res) {
+          if (res.status !== 200 || res?.data?.status !== 'success') {
+            reloadAfterSyncFailure(res?.data?.data);
+          }
+        })
+        .catch(function (error) {
+          reloadAfterSyncFailure(error);
+        });
+
+        setDragDropped(false);
+      }
+   }, [dragDropped]);
+
+    // if any flash message returned from server display it
     useEffect(() => {
         if (flash?.message) {
             toast(flash.message);
         }
     }, [flash]);
+
     if (!selectedProject) return null;
 
+    console.log(`Tasks(): before render. tasksData`,tasksData);
     return (
         <div className="min-h-screen bg-gray-50 px-6">
             <div className="max-w-3xl mx-auto">
                 <h1 className="m-3 p-6 text-2xl font-bold text-gray-800 text-center">Task Manager</h1>
                 <div className="flex justify-between items-center mb-6">
-                    <div className="flex gap-3 items-center">
+                    {projects?.length > 0 && selectedProject && (
+                      <div className="flex gap-3 items-center">
                         <select
                             value={selectedProject.id}
                             onChange={(e) => setSelectedProject(e.target.value)}
@@ -76,16 +116,19 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
                         >
                             Add Task
                         </button>
-                    </div>
+                      </div>
+                    )}
                 </div>
                 <div className="space-y-4">
-                    {tasks?.length > 0 ? (
-                        tasks?.map(task => (
+                    {tasksData?.length > 0 ? (
+                        tasksData?.map((task, ind) => (
                         <Task
                             key={task.id}
+                            index={ind}
                             task={task}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
+                            moveTask={moveTask}
                         />
                         ))
                     ) : (

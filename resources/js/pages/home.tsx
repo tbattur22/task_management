@@ -1,3 +1,5 @@
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import { type SharedData, ProjectType, TaskType } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
@@ -18,7 +20,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Home({projects, selectedProject, tasks}: {projects: ProjectType[], selectedProject: ProjectType, tasks: TaskType[]}) {
     const { auth } = usePage<SharedData>().props;
 
+    console.log(`Home(): before render: projects:selectedProject:tasks`,projects,selectedProject,tasks);
     return (
+      <DndProvider backend={HTML5Backend}>
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Task Management Demo">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
@@ -59,5 +63,6 @@ export default function Home({projects, selectedProject, tasks}: {projects: Proj
                 <div className="hidden h-14.5 lg:block"></div>
             </div>
         </AppLayout>
+      </DndProvider>
     );
 }

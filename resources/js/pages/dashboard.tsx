@@ -16,7 +16,7 @@ export default function Dashboard() {
         <div className='m-2 p-2'>
             <Head title="Dashboard" />
             <h1 className="mb-8 text-3xl text-center font-bold">Dashboard</h1>
-            <p className="mb-8 text-center leading-normal">Welcome to Task Management Demo App</p>
+            <p className="mb-8 text-center leading-normal">Dashboard for Task Management Demo App</p>
         </div>
     </AppLayout>
   );
