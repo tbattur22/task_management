@@ -1,77 +1,66 @@
-import { useDrag, useDrop } from 'react-dnd'
 import {ItemTypes} from '../../lib/DnDItemTypes'
 import {TaskType} from '@/types'
+import {useSortable} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
+
 
 type TaskProps = {
-  index: number,
-  task: TaskType,
-  onEdit: (task:TaskType)=>void,
-  onDelete:(id:number)=>void,
-  moveTask:(from:number, to:number)=>void
+  task: TaskType;
+  onEdit?: (task:TaskType)=>void;
+  onDelete?:(id:number)=>void;
+  isOverlay?: boolean;
 };
 
-const Task = ({index, task, onEdit, onDelete, moveTask}: TaskProps)=> {
+const Task = ({task, onEdit, onDelete, isOverlay}: TaskProps)=> {
     const { id, name, priority, project_id, created_at, updated_at } = task;
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        setActivatorNodeRef,
+        transform,
+        transition,
+    } = useSortable({id});
 
-    const [{ isDragging }, drag] = useDrag(() => ({
-      type: ItemTypes.TASK,
-      item: { id, name, priority, index },
-      end: (item, monitor) => {
-        const dropResult = monitor.getDropResult<any>()
-        if (item && dropResult) {
-          // alert(`You dropped ${item.name} from index ${dropResult.fromIndex} to ${dropResult.toIndex}!`)
-          moveTask(dropResult.fromIndex, dropResult.toIndex);
-        }
-      },
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-        handlerId: monitor.getHandlerId(),
-      }),
-    }));
-
-    const [{canDrop, isOver}, drop] = useDrop({
-      accept: ItemTypes.TASK,
-      canDrop: (item, monitor) => {
-        // console.log(`move canDrop(): item:`,item);
-        return item?.priority && item.priority !== priority;
-      },
-      drop: (item, monitor) => {
-        console.log(`move drop(): src item:target item`,item, task);
-        // moveTask(item.index, index);
-        return {fromIndex: item.index, toIndex: index};
-      },
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop()
-      })
-    });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isOverlay ? 0.8 : 1
+    };
 
   return (
-    <div ref={node => drag(drop(node))} className="task bg-white shadow-md rounded-lg p-4 border border-gray-200 hover:shadow-lg transition duration-300">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-          <p className="text-sm text-gray-500">Id: {id}</p>
-          <p className="text-sm text-gray-500">Project Id: {project_id}</p>
-          <p className="text-sm text-gray-500">Priority: {priority}</p>
+    <div ref={setNodeRef} style={style} className="flex justify-between task bg-white shadow-md rounded-lg p-4 border border-gray-200 hover:shadow-lg transition duration-300">
+      <div>
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
+            <p className="text-sm text-gray-500">Id: {id}</p>
+            <p className="text-sm text-gray-500">Project Id: {project_id}</p>
+            <p className="text-sm text-gray-500">Priority: {priority}</p>
+          </div>
+        </div>
+        <div className="text-sm text-gray-600 mt-2">
+          <p>Created: {new Date(created_at).toLocaleString()}</p>
+          <p>Updated: {new Date(updated_at).toLocaleString()}</p>
+        </div>
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() => onEdit(task)}
+            className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(task.id)}
+            className="bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600"
+          >
+            Delete
+          </button>
         </div>
       </div>
-      <div className="text-sm text-gray-600 mt-2">
-        <p>Created: {new Date(created_at).toLocaleString()}</p>
-        <p>Updated: {new Date(updated_at).toLocaleString()}</p>
-      </div>
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={() => onEdit(task)}
-          className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
-        >
-          Edit
-        </button>
-        <button
-          onClick={() => onDelete(task.id)}
-          className="bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600"
-        >
-          Delete
+      <div >
+        <button ref={setActivatorNodeRef} {...attributes} {...listeners} className='cursor-move'>
+          <svg  xmlns="http://www.w3.org/2000/svg"  width={24}  height={24}  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth={2}  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-drag-drop"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 11v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2" /><path d="M13 13l9 3l-4 2l-2 4l-3 -9" /><path d="M3 3l0 .01" /><path d="M7 3l0 .01" /><path d="M11 3l0 .01" /><path d="M15 3l0 .01" /><path d="M3 7l0 .01" /><path d="M3 11l0 .01" /><path d="M3 15l0 .01" /></svg>
         </button>
       </div>
     </div>

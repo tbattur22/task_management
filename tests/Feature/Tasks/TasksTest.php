@@ -3,10 +3,10 @@
 use App\Models\Project;
 use Inertia\Testing\AssertableInertia as Assert;
 
-beforeAll()
-{
-    $this->user = factory(User::class)->create();
-}
+// beforeAll()
+// {
+//     $this->user = factory(User::class)->create();
+// }
 
 test('Guest should be redirected to login page', function () {
     $this->get('/')->assertRedirect('/login');
