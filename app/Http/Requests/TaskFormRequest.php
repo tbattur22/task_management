@@ -22,9 +22,14 @@ class TaskFormRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Returns 422 response for Inertia to notify the validation errors
+     * @param \Illuminate\Contracts\Validation\Validator $validator
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     * @return never
+     */
     protected function failedValidation(Validator $validator): void
     {
-        Log::error("failedValidation in TaskFormRequest");
         $projectId = (int) $this->input('project_id');
         $project = Project::findOrFail($projectId);
 
@@ -39,7 +44,7 @@ class TaskFormRequest extends FormRequest
 
         // Return proper 422 response for Inertia
         throw new HttpResponseException(
-            Inertia::render('task_create_edit', [
+            Inertia::render('tasks/create_edit', [
                 'project' => $project,
                 'taskToEdit' => $task ?? null,
                 'errors' => $validator->errors(),
@@ -47,6 +52,7 @@ class TaskFormRequest extends FormRequest
             ])->toResponse($this)->setStatusCode(422)
         );
     }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -54,29 +60,21 @@ class TaskFormRequest extends FormRequest
      */
     public function rules(): array
     {
-        Log::info("TaskFormRequest:rules()");
-        DB::listen(function ($query) {
-            Log::debug("SQL in rules(): {$query->sql}", $query->bindings);
-        });
-
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+        // if it is update need to get the task id
         $taskId = $isUpdate
             ? (is_object($this->route('task')) ? $this->route('task')->id : $this->route('task'))
             : null;
 
+        // tasks table has composite unique index on project_id and priority columns
         $uniquePriorityRule = Rule::unique('tasks')
             ->where(function ($query) {
                 return $query->where('project_id', (int) $this->input('project_id'));
             });
 
+        // if it is update need to ignore the current record for enforcing the unique index
         if ($isUpdate && $taskId) {
             $uniquePriorityRule->ignore($taskId);
-        }
-
-        if ($this->isMethod('post')) {
-            Log::info("TaskFormRequest:rules(). Creating task. project id this->project_id: {$this->project_id}, this->input('project_id'): ".$this->input('project_id'));
-        } elseif ($this->isMethod("put") || $this->isMethod("patch")) {
-            Log::info("TaskFormRequest:rules(). Updating task. project id this->project_id: {$this->project_id}, this->input('project_id'): ".$this->input('project_id'));
         }
 
         return [

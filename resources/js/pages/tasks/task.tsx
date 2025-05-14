@@ -45,13 +45,13 @@ const Task = ({task, onEdit, onDelete, isOverlay}: TaskProps)=> {
         </div>
         <div className="flex gap-2 mt-4">
           <button
-            onClick={() => onEdit(task)}
+            onClick={() => onEdit ? onEdit(task) : null}
             className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
           >
             Edit
           </button>
           <button
-            onClick={() => onDelete(task.id)}
+            onClick={() => onDelete ? onDelete(task.id) : null}
             className="bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600"
           >
             Delete

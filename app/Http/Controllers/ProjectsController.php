@@ -13,14 +13,14 @@ class ProjectsController extends Controller
     public function index()
     {
         $projects = Project::all();
-        return Inertia::render('projects', [
+        return Inertia::render('projects/projects', [
             'projects'=> $projects,
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('project_create_edit');
+        return Inertia::render('projects/create_edit');
     }
     public function store(ProjectFormRequest $request)
     {
@@ -36,7 +36,7 @@ class ProjectsController extends Controller
     {
         try {
             $project = Project::findOrFail($id);
-            return Inertia::render('project_create_edit')->with('projectToEdit', $project);
+            return Inertia::render('projects/create_edit')->with('projectToEdit', $project);
         } catch (\Exception $e) {
             return Redirect::route('projects')->with('message', $e->getMessage());
         }

@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::post('/test-inertia', function (Request $request) {
-        Log::debug('🔍 Inertia Request Headers:', $request->headers->all());
-        return response()->noContent();
-    });
-
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');

@@ -1,12 +1,10 @@
-import { useState } from 'react'
+import { useState, ChangeEvent, FormEvent } from 'react'
 import { router, usePage } from '@inertiajs/react'
 import { type BreadcrumbItem, ProjectType } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 
-export default function ProjectCreateEdit({projects, projectToEdit}:{projects: ProjectType[], projectToEdit:ProjectType}) {
-    console.log(`Project:Create/Edit():projects:projectToEdit`,projects,projectToEdit);
+export default function CreateEdit({projectToEdit}:{projectToEdit:ProjectType}) {
     const {errors} = usePage().props;
-    console.log(`ProjectCreateEdit:errors`,errors);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -35,7 +33,7 @@ export default function ProjectCreateEdit({projects, projectToEdit}:{projects: P
 
   const [values, setValues] = useState(projectData);
 
-  function handleChange(e) {
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const key = e.target.id;
     const value = e.target.value;
     console.log(`handleChange():key:${key} and value:${value}`);
@@ -45,7 +43,7 @@ export default function ProjectCreateEdit({projects, projectToEdit}:{projects: P
     }))
   }
 
-  function handleSubmit(e) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (projectToEdit) {// edit project
         console.log(`handleSubmit():editing existing project:making put request, values`,values);

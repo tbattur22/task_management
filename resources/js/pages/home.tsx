@@ -2,7 +2,7 @@ import { type SharedData, ProjectType, TaskType } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import Tasks from '../components/tasks/tasks';
+import Tasks from './tasks/tasks';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,10 +15,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Home({projects, selectedProject, tasks}: {projects: ProjectType[], selectedProject: ProjectType, tasks: TaskType[]}) {
+type HomeProps = {
+  projects: ProjectType[];
+  selectedProject: ProjectType;
+  tasks: TaskType[];
+}
+
+export default function Home({projects, selectedProject, tasks}: HomeProps) {
     const { auth } = usePage<SharedData>().props;
 
-    console.log(`Home(): before render: projects:selectedProject:tasks`,projects,selectedProject,tasks);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Task Management Demo">

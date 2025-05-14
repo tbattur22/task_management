@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->integer('priority');
             $table->timestamps();
+            // task priorities have to be unique for the same project
             $table->unique(['project_id','priority']);
         });
     }

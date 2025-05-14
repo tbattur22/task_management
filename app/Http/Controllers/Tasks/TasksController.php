@@ -14,9 +14,12 @@ use Illuminate\Support\Facades\DB;
 
 class TasksController extends Controller
 {
+    /**
+     * Returns list of all tasks under the selected project ordered by priority
+     * @return \Inertia\Response
+     */
     public function index()
     {
-        Log::info("TasksController:index()");
         $projects = Project::all();
         $tasks = null;
         // check if any project was selected by user otherwise select the 1st project if available
@@ -24,17 +27,14 @@ class TasksController extends Controller
         if (is_object($projectId)) {
             $projectId = $projectId->id;
         }
-        // Log::info("TasksController:index(): project id is ". $projectId ."");
+
         if ($projectId) {
             $selectedProject = Project::findOrFail($projectId);
             $tasks = Task::where('project_id', $selectedProject->id)->orderBy("priority","asc")->get();
-            // Log::info("TasksController:index():selectedProject {$selectedProject->name} and there are {count($tasks)}");
         } else {
             $selectedProject = null;
-            // Log::info("TasksController:index():project id is NULL");
         }
 
-        // LOG::info("TasksController:index(): before returning Inertia home component");
         return Inertia::render('home', [
             'projects'=> $projects,
             'selectedProject'=> $selectedProject,
@@ -42,7 +42,13 @@ class TasksController extends Controller
         ]);
     }
 
-    public function selectProject(int $projectId, string $flashMessage = '')
+    /**
+     * Sets selected project and returns list of all tasks belonging to this project
+     * @param int $projectId
+     * @throws \Exception
+     * @return \Inertia\Response
+     */
+    public function selectProject(int $projectId)
     {
         $projects = Project::all();
 
@@ -50,33 +56,39 @@ class TasksController extends Controller
         if ($projectId > 0) {
             $project = Project::findOrFail($projectId);
             $tasks = Task::where('project_id', $projectId)->orderBy('priority')->get();
+            // store the selected project id in the session
             session()->put('project_id', $projectId);
         } else {
             throw new \Exception('project_id parameter must be positive number');
         }
+
         return Inertia::render('home', [
             'projects'=> $projects,
             'selectedProject'=> $project,
             'tasks'=> $tasks
-        ])->with('message', $flashMessage);
+        ]);
     }
 
+    /**
+     * Displays the form to create a new task.
+     * @param int $projectId
+     * @return \Inertia\Response
+     */
     public function create(int $projectId)
     {
-        Log::info('TasksController:create():projectId'. $projectId);
         $project = Project::findOrFail($projectId);
         // pass null as task to the React component to indicate it is new task creation
-        return Inertia::render('task_create_edit')->with('project', $project)->with('taskToEdit', null);
+        return Inertia::render('tasks/create_edit')->with('project', $project)->with('taskToEdit', null);
     }
+
+    /**
+     * Stores the new task in the database after validating the form values
+     * @param \App\Http\Requests\TaskFormRequest $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(TaskFormRequest $request)
     {
-        Log::info('TasksController:store()');
-
         try {
-            DB::listen(function ($query) {
-                Log::debug("SQL: {$query->sql}", $query->bindings);
-            });
-
             $newTask = Task::create($request->validated());
 
             if ($newTask instanceof Task) {
@@ -84,8 +96,6 @@ class TasksController extends Controller
             } else {
                 return Redirect::route('home')->with('message','Failed to create the task');
             }
-            // return $this->selectProject($request->project_id, "Successfully created task");
-            // return Redirect::route('project.select')->with('id', $request->project_id)->with('message','Successfully created task');
         } catch (\Exception $e) {
             Log::error('DB Error on task create: ' . $e->getMessage());
             return Redirect::route('home')->with('message', $e->getMessage());
@@ -103,11 +113,12 @@ class TasksController extends Controller
         try {
             $task = Task::findOrFail($id);
             $project = Project::findOrFail($task->project_id);
-            return Inertia::render('task_create_edit')->with('project', $project)->with('taskToEdit', $task);
+            return Inertia::render('tasks/create_edit')->with('project', $project)->with('taskToEdit', $task);
         } catch (\Exception $e) {
             return Redirect::route('home')->with('message', $e->getMessage());
         }
     }
+
     /**
      * Method updates the Task model (uses route model binding)
      *
@@ -120,33 +131,42 @@ class TasksController extends Controller
         try {
             $task->update($request->validated());
             return Redirect::route('home')->with('message','Succesfully updated the task');
-            // return Redirect::route('home')->with('message','Successfully updated the task');
-            // return $this->selectProject($task->project_id, "Successfully updated the task");
         } catch (\Exception $e) {
+            Log::error('DB Error on task update: ' . $e->getMessage());
             return redirect()->back()->with('message', $e->getMessage());
         }
     }
 
-    public function destroy($id)
+    /**
+     * Deletes the task
+     * @param int $id task id to delete
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy(int $id)
     {
         try {
             $task = Task::findOrFail($id);
-            $projectId = $task->project_id;
             $task->delete();
+
             return Redirect::route('home')->with('message','Successfully deleted the task.');
-            // return $this->selectProject($projectId, "Successfully deleted the task");
         } catch (\Exception $e) {
+            Log::error('DB error on task destroy'. $e->getMessage());
             return Redirect::route('home')->with('message', $e->getMessage());
         }
     }
 
+    /**
+     * Updates the priorities of the tasks as per passed in ordered task ids
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
     public function updatePriority(Request $request)
     {
-        $content = $request->getContent();
-        Log::info($content);
+        // get the comma separated ordered task ids
+        $taskIds = $request->getContent();
 
-        $res = Task::updatePriorities(explode(',',$content));
-        Log::info(print_r($res, true));
+        // update the tasks table with the new priority orders
+        $res = Task::updatePriorities(explode(',',$taskIds));
 
         return response()->json($res);
     }

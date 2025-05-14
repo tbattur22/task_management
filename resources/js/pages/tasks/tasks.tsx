@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
-import Task from '@/components/tasks/task';
+import Task from '@/pages/tasks/task';
 import { type SharedData, ProjectType, TaskType } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import {
@@ -51,7 +51,10 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
     };
 
     const handleDelete = (id:number) => {
-      if (window.confirm('Are you sure you want to delete this task?')) {
+      const foundTask = tasksData.find(task => task.id === id);
+      if (!foundTask) throw new Error(`The task with id ${id} not found!`);
+
+      if (window.confirm(`Are you sure you want to delete the task: ${foundTask.name}?`)) {
           router.delete(route('task.destroy', id));
       }
     };
@@ -121,8 +124,6 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
     }, [flash]);
 
     if (!selectedProject) return null;
-
-    console.log(`Tasks(): before render. activeTask`,activeTask);
 
     return (
       <div className="min-h-screen bg-gray-50 px-6">

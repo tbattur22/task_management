@@ -3,8 +3,8 @@ import { type SharedData, ProjectType, TaskType } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import Project from '@/components/projects/project';
-import Tasks from '../components/tasks/tasks';
+import Project from '@/pages/projects/project';
+import Tasks from '../tasks/tasks';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -19,21 +19,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const Projects = ({projects}: {projects:ProjectType[]}) => {
   const { auth } = usePage<SharedData>().props;
-  console.log(`Projects()`,projects);
   const [projectsData, setProjectsData] = useState(projects);
   const handleCreate = () => {
-      console.log(`handleCreate()`);
       router.post(route('project.create'));
   };
 
   const handleEdit = (projectToEdit: ProjectType) => {
-      console.log(`handleEdit(projectToEdit`,projectToEdit);
-      // const updatedName = prompt('Edit task name:', projectToEdit.name);
       router.get(route('project.edit',projectToEdit.id));
   };
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
+    const foundProject = projectsData.find(project => project.id === id);
+    if (!foundProject) throw new Error(`The project with id ${id} not found!`);
+
+    if (window.confirm(`Are you sure you want to delete the project: ${foundProject.name}?`)) {
         router.delete(route('project.destroy', id));
     }
   };
