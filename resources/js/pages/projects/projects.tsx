@@ -18,7 +18,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const Projects = ({projects}: {projects:ProjectType[]}) => {
-  const { auth } = usePage<SharedData>().props;
   const [projectsData, setProjectsData] = useState(projects);
   const handleCreate = () => {
       router.post(route('project.create'));
@@ -58,7 +57,7 @@ const Projects = ({projects}: {projects:ProjectType[]}) => {
             </div>
 
             <div className='flex flex-col'>
-                {projectsData.map((proj, i) => {
+                {projectsData.map((proj) => {
                     return <Project key={proj.id} project={proj} onEdit={handleEdit} onDelete={handleDelete} />
                 })}
             </div>
