@@ -19,7 +19,6 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  rectSortingStrategy,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {
@@ -34,7 +33,7 @@ type TasksProps = {
 }
 
 export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
-    const { auth, flash } = usePage<SharedData>().props;
+    const { flash } = usePage<SharedData>().props;
     const [tasksData, setTasksData] = useState<TaskType[]>(tasks);
     const [activeTask, setActiveTask] = useState<TaskType | null>(null);
     const [dragDropped, setDragDropped] = useState(false);
@@ -114,7 +113,7 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
 
         setDragDropped(false);
       }
-   }, [dragDropped]);
+   }, [dragDropped, tasksData]);
 
     // if any flash message returned from server display it
     useEffect(() => {
@@ -161,7 +160,7 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
                   modifiers={[restrictToVerticalAxis]}>
                   <SortableContext items={tasksData} strategy={verticalListSortingStrategy}>
                     {tasksData?.length > 0 ? (
-                        tasksData?.map((task, ind) => (
+                        tasksData?.map((task) => (
                         <Task
                             key={task.id}
                             task={task}
