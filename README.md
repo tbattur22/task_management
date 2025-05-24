@@ -28,6 +28,9 @@ DB_DATABASE=task_management
 DB_USERNAME=laravel_user
 DB_PASSWORD=laravel_password
 
+- Clone the repo or extract the zipped project
+- Run composer to install the application dependencies
+- Run npm install and npm run build for frontend assets
 - Run the migration and seed the db (seed will add 3 projects and a fews tasks under each project):
 
 php artisan migrate:fresh --seed
