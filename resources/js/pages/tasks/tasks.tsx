@@ -37,6 +37,7 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
     const [tasksData, setTasksData] = useState<TaskType[]>(tasks);
     const [activeTask, setActiveTask] = useState<TaskType | null>(null);
     const [dragDropped, setDragDropped] = useState(false);
+    console.log(`Tasks:tasksData:`,tasksData);
 
     const setSelectedProject = (projectId:string) => {
         router.post(route('project.select',projectId));
@@ -101,7 +102,7 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
     // if task order changed via drag and drop sync the changed priorities in the backend
     useEffect(() => {
       if (dragDropped) {
-        axios.post('/priority', tasksData.map((el) => el.id).join())
+        axios.post('/priority', {newlySortedIds: tasksData.map((el) => el.id).join()})
         .then(function (res) {
           if (res.status !== 200 || res?.data?.status !== 'success') {
             reloadAfterSyncFailure(res?.data?.data);
@@ -122,7 +123,7 @@ export default function Tasks({projects, selectedProject, tasks} : TasksProps) {
         }
     }, [flash]);
 
-    if (!selectedProject) return null;
+    if (!selectedProject) return <p className="text-gray-500 text-center">No projects to select.</p>;
 
     return (
       <div className="min-h-screen bg-gray-50 px-6">

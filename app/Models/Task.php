@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -12,6 +13,11 @@ class Task extends Model
 {
     use HasFactory;
     protected $fillable = ['name','priority','project_id','created_at','updated_at'];
+
+    public function project():BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
     /**
      * Updates the priorities of the tasks according to the order they were passed in.

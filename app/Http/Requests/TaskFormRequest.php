@@ -85,6 +85,8 @@ class TaskFormRequest extends FormRequest
                 'integer',
                 $uniquePriorityRule,
             ],
+            'created_at' => ['nullable','date'],
+            'updated_at'=> ['nullable','date'],
         ];
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Services\TaskService;
 
 class TasksController extends Controller
 {
@@ -30,7 +31,7 @@ class TasksController extends Controller
 
         if ($projectId) {
             $selectedProject = Project::findOrFail($projectId);
-            $tasks = Task::where('project_id', $selectedProject->id)->orderBy("priority","asc")->get();
+            $tasks = $selectedProject->tasks()->orderBy('priority','asc')->get();
         } else {
             $selectedProject = null;
         }
@@ -76,20 +77,27 @@ class TasksController extends Controller
      */
     public function create(int $projectId)
     {
-        $project = Project::findOrFail($projectId);
-        // pass null as task to the React component to indicate it is new task creation
-        return Inertia::render('tasks/create_edit')->with('project', $project)->with('taskToEdit', null);
+        try {
+            // get loaded Project class from container so that we can mock it in Pest test
+            $project = app(Project::class)->findOrFail($projectId);
+            // pass null as task to the React component to indicate it is new task creation
+            return Inertia::render('tasks/create_edit')->with('project', $project)->with('taskToEdit', null);
+        } catch (\Exception $e) {
+            return Redirect::route('home')->with('message', $e->getMessage());
+        }
     }
 
     /**
      * Stores the new task in the database after validating the form values
      * @param \App\Http\Requests\TaskFormRequest $request
+     * @param \App\Services\TaskService $service
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(TaskFormRequest $request)
+    public function store(TaskFormRequest $request, TaskService $service)
     {
         try {
-            $newTask = Task::create($request->validated());
+            // using TaskService to create task for easy mocking in Pest test
+            $newTask = $service->create($request->validated());
 
             if ($newTask instanceof Task) {
                 return Redirect::route('home')->with('message','Succesfully created task');
@@ -111,7 +119,7 @@ class TasksController extends Controller
     public function edit($id)
     {
         try {
-            $task = Task::findOrFail($id);
+            $task = app(Task::class)->findOrFail($id);
             $project = Project::findOrFail($task->project_id);
             return Inertia::render('tasks/create_edit')->with('project', $project)->with('taskToEdit', $task);
         } catch (\Exception $e) {
@@ -124,12 +132,13 @@ class TasksController extends Controller
      *
      * @param \App\Http\Requests\TaskFormRequest $request
      * @param \App\Models\Task $task
+     * @param \App\Services\TaskService $service
      * @return \Illuminate\Http\RedirectResponse|\Inertia\Response
      */
-    public function update(TaskFormRequest $request, Task $task)
+    public function update(TaskFormRequest $request, Task $task, TaskService $service)
     {
         try {
-            $task->update($request->validated());
+            $service->update($task, $request->validated());
             return Redirect::route('home')->with('message','Succesfully updated the task');
         } catch (\Exception $e) {
             Log::error('DB Error on task update: ' . $e->getMessage());
@@ -145,7 +154,7 @@ class TasksController extends Controller
     public function destroy(int $id)
     {
         try {
-            $task = Task::findOrFail($id);
+            $task = app(Task::class)->findOrFail($id);
             $task->delete();
 
             return Redirect::route('home')->with('message','Successfully deleted the task.');
@@ -163,10 +172,9 @@ class TasksController extends Controller
     public function updatePriority(Request $request)
     {
         // get the comma separated ordered task ids
-        $taskIds = $request->getContent();
-
+        $data = json_decode($request->getContent(), true);
         // update the tasks table with the new priority orders
-        $res = Task::updatePriorities(explode(',',$taskIds));
+        $res = Task::updatePriorities(explode(',',$data['newlySortedIds']));
 
         return response()->json($res);
     }

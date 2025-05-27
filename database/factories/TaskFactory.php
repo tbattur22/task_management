@@ -18,7 +18,7 @@ class TaskFactory extends Factory
     {
         return [
             "name" => $this->faker->name,
-            "project_id"=> $this->faker->numberBetween(1,10),
+            "project_id"=> $this->faker->numberBetween(1,3),
             "priority"=> $this->faker->numberBetween(1,10),
         ];
     }

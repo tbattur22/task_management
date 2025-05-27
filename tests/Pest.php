@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Eloquent\Collection;
 use App\Models\User;
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +14,8 @@ use App\Models\User;
 */
 
 pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(Illuminate\Foundation\Testing\DatabaseMigrations::class)
     ->in('Feature');
 
 /*
@@ -42,6 +44,41 @@ expect()->extend('toBeOne', function () {
 |
 */
 
+function assertMyModels(array $functions)
+{
+    foreach ($functions as $function) {
+        $page = assertMyModel(...$function());
+    }
+    return $page;
+}
+function assertMyModel($page, $property, $component, $expectedValues, $fields)
+{
+    $page->component($component);
+
+    if ($expectedValues instanceof Collection) {
+        $page->has($property, $expectedValues->count());
+
+        // check each project values (id and name)
+        foreach ($expectedValues as $key => $expectedValue) {
+            assertMyPropsAtKey($page, $property, $fields, $key, $expectedValue);
+        }
+    } else {
+        assertMyProps($page, $property, $fields, $expectedValues);
+    }
+    return $page;
+}
+function assertMyPropsAtKey($page, $property, $fields, $key, $expectedValue)
+{
+    foreach ($fields as $field) {
+        $page->where("{$property}.{$key}.{$field}", $expectedValue->{$field});
+    }
+}
+function assertMyProps($page, $property, $fields, $expectedValue)
+{
+    foreach ($fields as $field) {
+        $page->where("{$property}.{$field}", $expectedValue->{$field});
+    }
+}
 function something()
 {
     // ..

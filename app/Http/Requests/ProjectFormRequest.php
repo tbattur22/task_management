@@ -23,6 +23,8 @@ class ProjectFormRequest extends FormRequest
     {
         return [
             "name"=> ["required","string","min:3"],
+            'created_at' => ['nullable','date'],
+            'updated_at'=> ['nullable','date'],
         ];
     }
 }
