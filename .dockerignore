@@ -2,3 +2,7 @@ node_modules
 vendor
 .git
 .env
+.env.production
+.gitignore
+*.md
+tests

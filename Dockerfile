@@ -41,7 +41,13 @@ RUN chown -R www-data:www-data /var/www/html \
 # Update Apache site root to /public
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
-EXPOSE 80
+# EXPOSE 80
+# Change Apache to listen on port 8080 for Render
+RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+
+# Expose the new port
+EXPOSE 8080
+
 
 CMD ["wait-for-it.sh"]
 
