@@ -1,0 +1,33 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: "curl -f http://localhost/up || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      APP_KEY: base64:c9DlDiuJOdFDV4Ask6aQTKrZct5D4ax2erSQvtHWO34=
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: task_management
+      DB_USERNAME: laraveluser
+      DB_PASSWORD: secret
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: task_management
+      POSTGRES_USER: laraveluser
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
