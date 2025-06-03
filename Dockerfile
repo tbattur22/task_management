@@ -42,11 +42,11 @@ RUN chown -R www-data:www-data /var/www/html \
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 # EXPOSE 80
-# Change Apache to listen on port 8080 for Render
-RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+# Change Apache to listen on port 10000 for Render
+RUN sed -i 's/80/10000/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
 # Expose the new port
-EXPOSE 8080
+EXPOSE 10000
 
 
 CMD ["wait-for-it.sh"]
