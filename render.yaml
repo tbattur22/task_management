@@ -15,7 +15,7 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: postgresql://batturtugsgerel:B3oiCZumc9iAnPjE1UdTiguOCh7nuvZm@dpg-d0uvr9vdiees73cbe880-a.oregon-postgres.render.com/task_management_r54q
+        value: dpg-d0uvr9vdiees73cbe880-a
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE

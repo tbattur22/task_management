@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
+echo "⏳ Validating environmental variables"
 # Validate env vars
 : "${DB_HOST:?Missing DB_HOST}"
 : "${DB_PORT:?Missing DB_PORT}"
@@ -10,6 +11,8 @@ set -e
 
 MAX_RETRIES=30
 COUNT=0
+
+echo "⏳ Waiting for Postgres at $DB_HOST:$DB_PORT..."
 
 until PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$DB_DATABASE" -c '\q' 2>/dev/null; do
   ((COUNT++))
