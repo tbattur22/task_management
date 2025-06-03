@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: laravel-render
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        value: base64:c9DlDiuJOdFDV4Ask6aQTKrZct5D4ax2erSQvtHWO34=
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: postgresql://batturtugsgerel:B3oiCZumc9iAnPjE1UdTiguOCh7nuvZm@dpg-d0uvr9vdiees73cbe880-a.oregon-postgres.render.com/task_management_r54q
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: task_management_r54q
+      - key: DB_USERNAME
+        value: batturtugsgerel
+      - key: DB_PASSWORD
+        value: B3oiCZumc9iAnPjE1UdTiguOCh7nuvZm
+    autoDeploy: true
