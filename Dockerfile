@@ -37,7 +37,8 @@ RUN npm install && npm run build
 # Set file permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/public
+    && chmod -R 755 /var/www/html/public \
+    && chmod -R 755 /var/www/html/public/build
 
 # Update Apache site root to /public
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
@@ -45,6 +46,12 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available
 # EXPOSE 80
 # Change Apache to listen on port 10000 for Render
 RUN sed -i 's/80/10000/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
+# Fix Apache config: add <Directory> block to allow access to /public and its subfolders
+RUN echo '<Directory /var/www/html/public>\n\
+    Options Indexes FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>' >> /etc/apache2/sites-available/000-default.conf
 
 # Expose the new port
 EXPOSE 10000

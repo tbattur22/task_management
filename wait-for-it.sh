@@ -26,6 +26,9 @@ done
 
 echo "✅ Postgres is ready — running migrations..."
 php artisan migrate --force
+php artisan config:clear
+php artisan view:clear
+
 
 # Start Apache
 exec apache2-foreground
