@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
     {
         if (app()->environment('production')) {
             URL::forceScheme('https');
+
+            // Trust all proxies (Render uses reverse proxy/load balancer)
+            Request::setTrustedProxies(
+                ['0.0.0.0/0'], // Trust all proxy IPs
+                SymfonyRequest::HEADER_X_FORWARDED_ALL
+            );
         }
     }
 }
