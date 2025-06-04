@@ -1,3 +1,9 @@
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
+
+axios.get('/sanctum/csrf-cookie'); // This sets XSRF-TOKEN cookie used by Laravel
+
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
