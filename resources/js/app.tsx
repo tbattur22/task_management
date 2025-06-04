@@ -7,7 +7,7 @@ if (token) {
 } else {
   console.log(`no csrf-token set in meta tag`);
 }
-// axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true;
 
 // axios.get('/sanctum/csrf-cookie'); // This sets XSRF-TOKEN cookie used by Laravel
 
