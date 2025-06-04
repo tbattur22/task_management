@@ -1,8 +1,15 @@
 import axios from 'axios';
 
-axios.defaults.withCredentials = true;
+const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+if (token) {
+  console.log(`setting csrf token for axios headers`);
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+} else {
+  console.log(`no csrf-token set in meta tag`);
+}
+// axios.defaults.withCredentials = true;
 
-axios.get('/sanctum/csrf-cookie'); // This sets XSRF-TOKEN cookie used by Laravel
+// axios.get('/sanctum/csrf-cookie'); // This sets XSRF-TOKEN cookie used by Laravel
 
 import '../css/app.css';
 
