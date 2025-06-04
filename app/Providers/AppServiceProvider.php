@@ -25,10 +25,13 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production')) {
             URL::forceScheme('https');
 
-            // Trust all proxies (Render uses reverse proxy/load balancer)
+            // Trust all proxies and specify headers explicitly
             Request::setTrustedProxies(
-                ['0.0.0.0/0'], // Trust all proxy IPs
-                SymfonyRequest::HEADER_X_FORWARDED_ALL
+                ['0.0.0.0/0'], // Trust all IPs (Render uses reverse proxies)
+                SymfonyRequest::HEADER_X_FORWARDED_FOR |
+                SymfonyRequest::HEADER_X_FORWARDED_HOST |
+                SymfonyRequest::HEADER_X_FORWARDED_PORT |
+                SymfonyRequest::HEADER_X_FORWARDED_PROTO
             );
         }
     }
